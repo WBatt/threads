@@ -1,0 +1,3 @@
+-Finish producer function
+-Finish consumer function
+-Create a displaying function to show current status of the buffer
