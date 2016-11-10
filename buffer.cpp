@@ -10,7 +10,6 @@ buffer::buffer(){
 
 int buffer::insert_item(buffer_item item) 
     {
-        while(count == BUFFER_SIZE){}
         if(count != BUFFER_SIZE)
             {
                 buf[in] = item;
@@ -24,7 +23,6 @@ int buffer::insert_item(buffer_item item)
 
 int buffer::remove_item(buffer_item *item) 
     {
-        while(count == 0){}
         if(count!=0)
             {
                 *item = buf[out];
@@ -38,7 +36,19 @@ int buffer::remove_item(buffer_item *item)
 
 void buffer::displayBuffer()
     {
-                printf("Buffer: [%d,%d,%d,%d,%d]\n",buf[0],buf[1],buf[2],buf[3],buf[4]);
-        
+                printf("Buffer: [");
+                for(int i = 0; i < 5; i++)
+                    {
+                        if(buf[i] != 0)
+                            {
+                                printf("%d",buf[i]);
+                                if((i+1) != 6 && buf[i+1] != 0)
+                                    {
+                                        printf(",");
+                                    }
+                            }
+                        
+                    }
+                printf("]\n");
     }
 

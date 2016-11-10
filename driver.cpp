@@ -12,6 +12,7 @@ buffer *Buffer;
 sem_t mutex;
 sem_t full;
 sem_t empty;
+sem_t printing;
 
 void *producer(void *param);
 void *consumer(void *param);
@@ -37,9 +38,10 @@ int main(int argc, char *argv[])
             
         //2. Initialize buffer
         Buffer = new buffer;
-        sem_init(&mutex, 1, 1);
-        sem_init(&full, 1, 1);
-        sem_init(&empty, 1, 0);
+        sem_init(&mutex, 0, 1);
+        sem_init(&full, 0, 0);
+        sem_init(&empty, 0, 5);
+        sem_init(&printing, 0, 1);
 
         
         pthread_t tid;              //thread identifier
@@ -49,12 +51,18 @@ int main(int argc, char *argv[])
         //3. Create producer thread(s) 
         for(int i = 0; i < atoi(argv[2]); i++)
             {
-                pthread_create(&tid,&attr,producer, &sum);
+                int *arg;
+                arg = (int*)malloc(sizeof(int));
+                *arg = i;
+                pthread_create(&tid,&attr,producer, (void*) arg);
             }
         //4. Create consumer thread(s)
         for(int i = 0; i < atoi(argv[3]); i++)
             {
-                pthread_create(&tid,&attr,consumer, &sum); 
+                int *arg;
+                arg = (int*)malloc(sizeof(int));
+                *arg = i;
+                pthread_create(&tid,&attr,consumer, arg); 
             }
         //5. Sleep 
         usleep(atoi(argv[1]) * 1000000);
@@ -71,9 +79,10 @@ int main(int argc, char *argv[])
 //upon wakening, insert a random number into the buffer
 void *producer(void *param) 
     {
+        printf("Creating producer thread.\n");
         buffer_item item;
         int done = 0;
-        while (done < 10) 
+        while (done < 5) 
             {
                 usleep((rand() % 5 + 1) * 100000);
                 
@@ -82,22 +91,25 @@ void *producer(void *param)
                 sem_wait(&empty);
                 sem_wait(&mutex);
                 
+                
                 // add the item to the buffer
                 if(Buffer->insert_item(item))
                     {
-                        printf("report error condition PRODUCER");
-                        //sem_post(&full);
+                        printf("report error condition PRODUCER\n");
                     }
                 else
                     {
                         printf("producer produced %d\n",item);
-                        //sem_post(&mutex);
-                        //sem_post(&empty);
                     }
                 
-                    
+
                 sem_post(&mutex);
                 sem_post(&full);
+                
+                sem_wait(&printing);
+                Buffer->displayBuffer();
+                sem_post(&printing);
+                
                 done++;
             }
             return NULL;
@@ -108,9 +120,10 @@ void *producer(void *param)
 //upon wakening, try to take something out of the buffer
 void *consumer(void *param) 
     {
+        printf("Creating consumer thread.\n");
         buffer_item item;
         int done = 0;
-        while (done < 10) 
+        while (done < 5) 
             {
                 usleep((rand() % 5 + 1) * 100000);
                 
@@ -120,18 +133,20 @@ void *consumer(void *param)
                 // consume the removed item
                 if (Buffer->remove_item(&item))
                     {
-                        printf("report error condition CONSUMER");
-                        //sem_wait(&empty);
+                        printf("report error condition CONSUMER\n");
                     }
                 else
                     {
                         printf("consumer consumed %d\n",item);
-                        //sem_post(&mutex);
-                        //sem_post(&full);
                     }
-                
+
                 sem_post(&mutex);
                 sem_post(&empty);
+                
+                sem_wait(&printing);
+                Buffer->displayBuffer();
+                sem_post(&printing);
+                
                 done++;
    
             }
