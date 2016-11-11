@@ -7,7 +7,6 @@ buffer::buffer(){
     count = 0;
 }
 
-
 int buffer::insert_item(buffer_item item) 
     {
         if(count != BUFFER_SIZE)
@@ -19,7 +18,6 @@ int buffer::insert_item(buffer_item item)
             }
         return -1;  //error condition
     }
-
 
 int buffer::remove_item(buffer_item *item) 
     {
@@ -36,19 +34,21 @@ int buffer::remove_item(buffer_item *item)
 
 void buffer::displayBuffer()
     {
-                printf("Buffer: [");
-                for(int i = 0; i < 5; i++)
+        int start = out;
+        int end = in;
+        printf("Buffer: [");
+        if(count != 0)
+            {
+                do
                     {
-                        if(buf[i] != 0)
+                        printf("%d",buf[start]);
+                        if(((start + 1) % 5) != end)
                             {
-                                printf("%d",buf[i]);
-                                if((i+1) != 6 && buf[i+1] != 0)
-                                    {
-                                        printf(",");
-                                    }
+                                printf(",");
                             }
-                        
-                    }
-                printf("]\n");
+                        start = (start + 1) % 5;
+                    }while(start != end);
+            }
+        printf("]\n");
     }
 
